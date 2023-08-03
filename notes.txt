@@ -1,1 +1,13 @@
 Aug 3 - 1:30am
+- I can create a bash script that gives the answer to me.
+- I want to compare the performance of python and bash code.
+
+Other options are:
+- use mmap to make it faster
+    compare the performance of reading from disk vs mmap
+- Use a cache
+    compare the performance of reading from disk vs cache
+
+Compare performance of bash, python, python with mmap, python with cache.
+
+The code assumes that the file is structured in a certain way.

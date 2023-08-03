@@ -20,6 +20,6 @@ def send_get_request(host, port, key):
 if __name__ == "__main__":
     host = "localhost"
     port = 8000
-    key = "apple"
+    key = "8a35eb59-62b3-481c-8875-1f248df4c952"
 
     send_get_request(host, port, key)
