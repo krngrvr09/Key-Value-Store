@@ -1,5 +1,6 @@
 import http.client
 import sys
+
 def send_get_request(host, port, key):
     conn = http.client.HTTPConnection(host, port)
     path = f"/?key={key}"
@@ -20,6 +21,14 @@ def send_get_request(host, port, key):
 if __name__ == "__main__":
     host = "localhost"
     port = 8000
-    key = sys.argv[1]
+    if len(sys.argv)<3:
+        print("Usage: python3 client.py <host:port> <key>")
+        exit(0)
+    try:
+        host,port = sys.argv[1].split(":")
+    except:
+        print("Invalid host:port format")
+        exit(0)
+    key = sys.argv[2]
 
     send_get_request(host, port, key)
