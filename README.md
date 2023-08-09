@@ -2,7 +2,7 @@
 
 ## Project Structure
 
-`db.py` - DB class encapsulating the DB object. Loads the key-values into in-memory hashmap and exposes the `get` method to get a value corresponding to a key.
+`db.py` - DB class encapsulating the DB object. Loads the key-values into in-memory hashmap and exposes the `get` method to get a value corresponding to a key. The `trie` branch implements the DB object as a Trie. The performance comparison between the two data structures is mentioned below.
 
 `server.py` - A Simple Python HTTP Server. A DB object is created when the server starts. This object is used during the lifetime of the server to get values corresponding to a key.
 
