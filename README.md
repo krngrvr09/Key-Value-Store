@@ -90,9 +90,15 @@ One way to reduce the latency would be use TCP instead of HTTP. As we can see in
 
 There are two data structures that we can use to improve the latency of the requests:
 + Perfect Hash Functions - Given that we know the keys before-hand, we can create a [Perfect Hash Function](https://en.wikipedia.org/wiki/Perfect_hash_function) that does not have collisions. This would take our lookup time complexity from O(1) on average to Worst Case O(1).
-+ Trie - Another way to reduce the latency would be to use trie's instead of Hash Maps. Since we are using a UUID, Trie will give an O(1) lookup time complexity because we would only need to match 36 nodes, which is O(1). 
++ Trie - Another way to reduce the latency would be to use trie's instead of Hash Maps. Since we are using a UUID, Trie will give an O(1) lookup time complexity because we would only need to match 36 nodes, which is O(1). I have implemented the Trie approach in the `trie` branch. I did basic load testing to compare it with the hash map approach. 
 
+```
+- 1 Concurrent User sending 7 RPS(avg) for 1 minute. 50p=140ms, 95p=150ms
+- 10 Concurrent Users sending 67 RPS(avg) for 1 minute, 50p=150ms, 95p=170ms
+- 100 Concurrent Users sending 243rps(avg) for 1 minute, 50p=150ms, 95p=1200ms
+```
 
+I observed that the performance is similar. However, loading data in the Trie for 1M keys was much slower than loading it into the Hashmap. We might need a deeper analysis to understand if the performance difference between the two approaches is significant.
 
 ### Memory Usage
 In my current approach, I am reading all data into an in-memory hashmap. The GET requests are served from the in-memory hash map. As the number of keys grow, the size of the hash map will also grow linearly. Looking at the keys and values in the `example.data` file, I can see that the key is a UUID and the value is a string with a median length of 35. Hence, the combined median length of key+value would be 71. Therefore, the lower_bound on memory used for upto 1M keys is 71MB - assuming 1 Byte per character. However, the real memory usage is much more because of storing redundant data. Using the `memory_profiler` tool in python, I was able to estimate that the server can use upto 230MB of RAM for 1M keys. Given the modern systems, this shouldn't be a bottleneck, but this is contingent on the size of the values. 
