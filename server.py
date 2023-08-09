@@ -2,9 +2,13 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import urllib.parse
 from db import DB
 import sys
+from memory_profiler import profile
+
 kvstore = None
 
 class MyHTTPRequestHandler(BaseHTTPRequestHandler):
+    
+    # @profile
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
         query_params = urllib.parse.parse_qs(parsed_path.query)
@@ -37,7 +41,7 @@ def run_server(host, port):
     httpd.serve_forever()
 
 if __name__ == "__main__":
-    host = "localhost"
+    host = "0.0.0.0"
     port = 8000
     if len(sys.argv)<2:
         print('Usage: python3 server.py <filepath>')

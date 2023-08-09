@@ -1,5 +1,5 @@
 import http.client
-
+import sys
 def send_get_request(host, port, key):
     conn = http.client.HTTPConnection(host, port)
     path = f"/?key={key}"
@@ -20,6 +20,6 @@ def send_get_request(host, port, key):
 if __name__ == "__main__":
     host = "localhost"
     port = 8000
-    key = "8a35eb59-62b3-481c-8875-1f248df4c952"
+    key = sys.argv[1]
 
     send_get_request(host, port, key)

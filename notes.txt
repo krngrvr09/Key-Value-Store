@@ -11,3 +11,140 @@ Other options are:
 Compare performance of bash, python, python with mmap, python with cache.
 
 The code assumes that the file is structured in a certain way.
+
+We dont know the size of values -> 34 characters -> avg and median.
+
+Questions
+- Load everything in memory
+    - 1M keys -> 36(transformed to 8 bytes with hash)+34 = 40MB
+    - 10K keys -> 40B*10K  -> 400KB
+
+Measuring performance
+- Response Time
+    - using the time command on the client.
+    - Does the HTTPServer cache results in any way?
+    - results can be cached at the client?
+    - Plot the response time distribution
+    - How does latency change with concurrent connections?
+- Throughput
+    - Single thread server - how many requests per second can it handle?
+    - Multi thread server - how many requests per second can it handle?
+    - Use tools like `ab` or `wrk` to measure throughput.
+- Scalability
+    - How does the server scale with increasing number of keys
+    - Does value size have an affect on scalability?
+- Memory Usage
+    - Monitor the memory usage of the server when measuring latency/throughput.
+    - How does memory usage change with concurrency, num of keys, value size?
+- CPU Usage
+    - Monitor the CPU usage of the server when measuring latency/throughput.
+- Error Handling
+    - Go over all possible error cases and handle them.
+- Caching
+    - Right now I am storing everything in memory. It's like one big cache.
+    - If I use 10% of keys in the cache, then how does the performance change?
+        - Maybe show how increasing it from 10% to 100% affects performance.
+    - How would you implement it?
+
+Observations
+- Keys are UUIDs
+- Values have mean and median of ~30 characters.
+
+Notes on memory profiling:
+- Using memory_profiler, I am getting 24MB of total usage - 
+- if I initialize with 1m keys, it takes >200MB of memory and it takes a while to load.
+- I can make this dictionary as a cache, and load it in the background.
+    - while it is loading, if I dont find a key, I can return scan the file.
+- Right now you are doing `for line in file`, try reading the all lines at once and see if it makes a difference.
+Notes on latency:
+- Time it takes to load the hashmap and search for a key:
+    - 10k keys:
+        real    0m0.179s
+        user    0m0.152s
+        sys     0m0.025s
+    - 1M keys:
+        real    0m1.489s
+        user    0m1.254s
+        sys     0m0.232s
+- Time it takes to read the file on a lookup(no hashmap)
+    - 10k keys. r: 1.7s, u: 1.2s, s: 0.4s
+        real    0m0.159s
+        user    0m0.127s
+        sys     0m0.032s
+    - 1m keys. r: 3.5m, u: 2.5m, s: 1m
+        real    0m0.677s
+        user    0m0.603s
+        sys     0m0.081s
+
+- Latency of get request for 10k keys
+    Median Real Time: 0.077
+    Median User Time: 0.063
+    Median Sys Time: 0.013
+    variance Real Time: 0.00011513160260260259
+    variance User Time: 0.00011630353453453454
+    variance Sys Time: 4.429320420420421e-05
+- Latency for get requests for 1m keys
+    Median Real Time: 0.082
+    Median User Time: 0.067
+    Median Sys Time: 0.013
+    variance Real Time: 0.0001081777137137137
+    variance User Time: 0.00011359224824824824
+    variance Sys Time: 4.817175575575576e-05
+
+- Load testing using Locusts
+10k keys
+- 1 User, 7RPS for 1 minute. 50p=140ms, 95p=150ms
+
+1M keys (2 VMs on either coasts in the US - 1 NY and 1 SF, where ping latency is 70ms)
+- 1 User, 7RPS for 1 minute. 50p=140ms, 95p=150ms
+- 10 Users, 67 RPS for 1 minute, 50p=140ms, 95p=180ms
+- 100 users, 243rps for 1 minute, 50p=150ms, 95p=1400ms
+
+1M keys (localhost testing)
+- 1 User, -RPS for 1 minute. 50p=3ms, 95p=4ms
+- 10 Users, 361 RPS for 1 minute, 50p=14ms, 95p=25ms
+
+Summary given by Hey
+Summary:
+  Total:	2.7866 secs
+  Slowest:	2.3609 secs
+  Fastest:	0.1387 secs
+  Average:	0.2745 secs
+  Requests/sec:	71.7732
+  
+
+Response time histogram:
+  0.139 [1]	|
+  0.361 [164]	|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.583 [9]	|■■
+  0.805 [16]	|■■■■
+  1.028 [0]	|
+  1.250 [0]	|
+  1.472 [7]	|■■
+  1.694 [0]	|
+  1.916 [0]	|
+  2.139 [0]	|
+  2.361 [3]	|■
+
+
+Latency distribution:
+  10% in 0.1403 secs
+  25% in 0.1409 secs
+  50% in 0.1416 secs
+  75% in 0.1425 secs
+  90% in 0.7284 secs
+  95% in 1.2701 secs
+  99% in 2.3603 secs
+
+Details (average, fastest, slowest):
+  DNS+dialup:	0.0703 secs, 0.1387 secs, 2.3609 secs
+  DNS-lookup:	0.0000 secs, 0.0000 secs, 0.0000 secs
+  req write:	0.0001 secs, 0.0000 secs, 0.0004 secs
+  resp wait:	0.2041 secs, 0.0696 secs, 2.2894 secs
+  resp read:	0.0001 secs, 0.0000 secs, 0.0007 secs
+
+Status code distribution:
+  [200]	200 responses
+
+If I had more time, I would use the perf command with python to see where my code is spending the most time. I did some basic tests using py-spy and I noticed that most of the time is being spent in parsing HTTP headers. This suggests that I could use TCP to communicate with the client.
+
