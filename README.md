@@ -1,7 +1,25 @@
 # Key-Value-Store
 
+## Project Structure
+
+`db.py` - DB class encapsulating the DB object. Loads the key-values into in-memory hashmap and exposes the `get` method to get a value corresponding to a key.
+
+`server.py` - A Simple Python HTTP Server. A DB object is created when the server starts. This object is used during the lifetime of the server to get values corresponding to a key.
+
+`client.py` - A simple client sending a GET request to the server.
+
+`example.data` - Data file with 10k keys and values.
+
+`1m_example.data` - Data file with 1M keys and values.
+
+`notes.txt` - Rough notes about the system and design decisions. Refer to README.md for final notes.
+
+`utils/` - Contains all scripts I used to do performance testing. The results of the performance testing are mentioned below.
+
 ## Instructions to run the program
-The repository contains two python files - `server.py` and `client.py`. It also contains `.data` files which contains the key-value pairs. There are two such files - `example.data` and `1m_example.data` containing 10k and 1M keys respectively. Start the server with the command `python3 server.py <path to .data file>`. Then send the request to the server using client by running `python3 client.py <key>`.
+Run the server - `python3 server.py <path to .data file>`
+
+Run the client - `python3 client.py <host:port> <key>`
 
 ## Notes
 
