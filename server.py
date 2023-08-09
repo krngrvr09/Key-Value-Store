@@ -49,7 +49,8 @@ if __name__ == "__main__":
     kvstore_path = sys.argv[1]
     try:
         kvstore = DB(kvstore_path)
-    except:
+    except Exception as e:
+        print(e.printStackTrace())
         print("Unable to load KV-Store")
         exit(0)
     run_server(host, port)
