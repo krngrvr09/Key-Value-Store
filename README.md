@@ -88,6 +88,11 @@ One way to reduce the latency would be use TCP instead of HTTP. As we can see in
 
 ![profile1](https://github.com/krngrvr09/Key-Value-Store/assets/5905966/264576cd-71e6-4d73-9fe4-06862ca1b87b)
 
+There are two data structures that we can use to improve the latency of the requests:
++ Perfect Hash Functions - Given that we know the keys before-hand, we can create a [Perfect Hash Function](https://en.wikipedia.org/wiki/Perfect_hash_function) that does not have collisions. This would take our lookup time complexity from O(1) on average to Worst Case O(1).
++ Trie - Another way to reduce the latency would be to use trie's instead of Hash Maps. Since we are using a UUID, Trie will give an O(1) lookup time complexity because we would only need to match 36 nodes, which is O(1). 
+
+
 
 ### Memory Usage
 In my current approach, I am reading all data into an in-memory hashmap. The GET requests are served from the in-memory hash map. As the number of keys grow, the size of the hash map will also grow linearly. Looking at the keys and values in the `example.data` file, I can see that the key is a UUID and the value is a string with a median length of 35. Hence, the combined median length of key+value would be 71. Therefore, the lower_bound on memory used for upto 1M keys is 71MB - assuming 1 Byte per character. However, the real memory usage is much more because of storing redundant data. Using the `memory_profiler` tool in python, I was able to estimate that the server can use upto 230MB of RAM for 1M keys. Given the modern systems, this shouldn't be a bottleneck, but this is contingent on the size of the values. 
